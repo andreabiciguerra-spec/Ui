@@ -1,0 +1,26 @@
+name: Build mod
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Descomprimir y localizar proyecto
+        run: |
+          if ls *.zip >/dev/null 2>&1; then unzip -oq *.zip; fi
+          echo "DIR=$(dirname $(find . -name gradlew | head -1))" >> $GITHUB_ENV
+      - name: Compilar
+        run: |
+          cd "$DIR"
+          chmod +x gradlew
+          ./gradlew build --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TransformersMod-jar
+          path: ${{ env.DIR }}/build/libs/*.jar
